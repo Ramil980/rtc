@@ -1661,14 +1661,18 @@ pub enum Error {
     SyntaxError { s: String, p: usize },
 
     //Third Party Error
+    #[cfg(feature = "crypto")]
     #[error("{0}")]
     Sec1(#[source] sec1::Error),
+    #[cfg(feature = "crypto")]
     #[error("{0}")]
     P256(#[source] P256Error),
+    #[cfg(feature = "crypto")]
     #[error("{0}")]
     RcGen(#[from] rcgen::Error),
     #[error("invalid PEM: {0}")]
     InvalidPEM(String),
+    #[cfg(feature = "crypto")]
     #[error("aes gcm: {0}")]
     AesGcm(#[from] aes_gcm::Error),
     #[error("parse ip: {0}")]
@@ -1683,6 +1687,7 @@ pub enum Error {
     Utf8(#[from] FromUtf8Error),
     #[error("{0}")]
     Std(#[source] StdError),
+    #[cfg(feature = "crypto")]
     #[error("{0}")]
     Aes(#[from] aes::cipher::InvalidLength),
 
@@ -1789,6 +1794,7 @@ impl<T> From<std::sync::PoisonError<T>> for Error {
     }
 }
 
+#[cfg(feature = "crypto")]
 impl From<sec1::Error> for Error {
     fn from(e: sec1::Error) -> Self {
         Error::Sec1(e)
@@ -1801,16 +1807,19 @@ impl From<sec1::Error> for Error {
 /// required by the top-level [`enum@Error`] enum. This newtype always returns
 /// `false` for equality comparisons, which is the safe conservative choice
 /// for opaque cryptographic errors.
+#[cfg(feature = "crypto")]
 #[derive(Debug, Error)]
 #[error("{0}")]
 pub struct P256Error(#[source] p256::elliptic_curve::Error);
 
+#[cfg(feature = "crypto")]
 impl PartialEq for P256Error {
     fn eq(&self, _: &Self) -> bool {
         false
     }
 }
 
+#[cfg(feature = "crypto")]
 impl From<p256::elliptic_curve::Error> for Error {
     fn from(e: p256::elliptic_curve::Error) -> Self {
         Error::P256(P256Error(e))

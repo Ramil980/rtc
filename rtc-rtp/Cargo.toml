@@ -19,6 +19,11 @@ rand.workspace = true
 serde.workspace = true
 memchr = "2.1.1"
 
+# These entries don't add new deps — they inject WASM features onto existing transitive copies
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2.17", features = ["js"] }
+getrandom03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
+
 [dev-dependencies]
 chrono.workspace = true
 criterion.workspace = true
