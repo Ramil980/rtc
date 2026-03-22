@@ -67,7 +67,7 @@ pub(crate) struct PacketizerImpl {
     pub(crate) clock_rate: u32,
     pub(crate) abs_send_time_ext_id: u8, //http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
     pub(crate) time_gen: Option<FnTimeGen>,
-    time_baseline: SystemInstant,
+    time_baseline: Option<SystemInstant>,
 }
 
 impl fmt::Debug for PacketizerImpl {
@@ -101,7 +101,7 @@ pub fn new_packetizer(
         clock_rate,
         abs_send_time_ext_id: 0,
         time_gen: None,
-        time_baseline: SystemInstant::now(),
+        time_baseline: None,
     }
 }
 
@@ -139,7 +139,8 @@ impl Packetizer for PacketizerImpl {
             } else {
                 Instant::now()
             };
-            let send_time = AbsSendTimeExtension::new(self.time_baseline.ntp(now));
+            let baseline = self.time_baseline.get_or_insert_with(SystemInstant::now);
+            let send_time = AbsSendTimeExtension::new(baseline.ntp(now));
             //apply http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
             let mut raw = BytesMut::with_capacity(send_time.marshal_size());
             raw.resize(send_time.marshal_size(), 0);
